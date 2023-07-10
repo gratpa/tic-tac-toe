@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
 export const useCounterStore = defineStore('counter', () => {
@@ -15,6 +15,7 @@ export const useCounterStore = defineStore('counter', () => {
   ])
 
   const activePlayer = ref('O')
+  const winner = ref({ name: '', text: '' })
 
   const makeMove = (id: number) => {
     gameBtns.value[id].name = activePlayer.value
@@ -31,42 +32,42 @@ export const useCounterStore = defineStore('counter', () => {
       [0, 4, 8],
       [6, 4, 2]
     ]
-    for (let i = 0; i < winningId.length; i++) {
-      const [x, y, z] = winningId[i]
 
+    winningId.forEach((element) => {
+      const [x, y, z] = element
       if (
         gameBtns.value[x].name === gameBtns.value[y].name &&
         gameBtns.value[x].name === gameBtns.value[z].name &&
         gameBtns.value[x].name !== ''
       ) {
-        return gameBtns.value[x].name
+        winner.value.name = gameBtns.value[x].name
+        if (winner.value.name === 'X') {
+          winner.value.text = 'The winner is player ❌'
+        } else if (winner.value.name === 'O') {
+          winner.value.text = 'The winner is player ⭕'
+        }
       }
+    })
+    if (gameBtns.value.every((element) => element.name !== '') && winner.value.name === '') {
+      winner.value.text = 'There is no winner'
     }
   }
 
   const reset = () => {
     gameBtns.value.forEach((btn) => {
       btn.name = ''
+      winner.value.name = ''
+      winner.value.text = ''
     })
 
     activePlayer.value = 'O'
   }
-  const dispWinner = () => {
-    if (winner.value === 'X') {
-      return 'The winner is player ❌'
-    } else if (winner.value === 'O') {
-      return 'The winner is player ⭕'
-    }
-  }
-
-  const winner = computed(() => checkWinner())
-  const result = computed(() => dispWinner())
 
   return {
     gameBtns,
     activePlayer,
     winner,
-    result,
+    checkWinner,
     reset,
     makeMove
   }
